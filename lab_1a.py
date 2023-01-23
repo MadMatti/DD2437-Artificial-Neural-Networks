@@ -8,8 +8,8 @@ seed = 42
 '''3.1.1 Generation of linearly-separable data'''
 
 def classes_generation():
-    mA = np.array([1, 0])
-    mB = np.array([-1, -4])
+    mA = np.array([-4, -2])
+    mB = np.array([0, 0])
     sigmaA = 0.5
     sigmaB = 0.5
     classA = np.zeros((2, n))
@@ -35,7 +35,7 @@ def data_generation(classA, classB):
     T = np.array([1]*n + [-1]*n)
     
     # shuffle data points
-    #np.random.seed(seed)
+    np.random.seed(seed)
     idx = list(range(2*n))
     np.random.shuffle(idx)
     X = X[:, idx]
@@ -52,7 +52,7 @@ def add_bias(X):
 def initialize_weights(n_output, n_input):
     #np.random.seed(seed)
     #weights = np.random.normal(size=(n_output,n_input), loc=0, scale=1)
-    weights = [np.array([5, 10])]
+    weights = [np.array([5, 8, 10])]
     return weights
 
 
@@ -92,7 +92,7 @@ def online_perceptron_learning(X, T, weights, eta, epochs):
 def online_delta_rule(X, T, weights, eta, epochs):
     W = weights.copy()
     X = add_bias(X)
-    errors_list = [np.mean((W@X-T**2)/2)]
+    errors_list = [np.mean((W@X-T)**2/2)]
     weights_list = [W[0]]
     for epoch in range(epochs):
         #er=0
@@ -109,7 +109,7 @@ def online_delta_rule(X, T, weights, eta, epochs):
 
 def batch_delta_rule(X, T, weights, eta, epochs):
     W = weights.copy()
-    #X = add_bias(X)
+    X = add_bias(X)
     print(X.shape, W[0].shape)
     errors_list = [np.mean((W@X-T)**2/2)]
     weights_list = [W[0]]
@@ -142,8 +142,8 @@ def all_decision_boundary_plot(X, T, W_list):
     plt.scatter(X[0,:], X[1,:], c=T, cmap=plt.cm.Paired)
     x = np.linspace(min(X[0,:]), max(X[0,:]), 100)
     for i, W in enumerate(W_list):
-        w1, w2, = W
-        y = -(w1*x)/w2
+        w1, w2, bias = W
+        y = -(w1*x+bias)/w2
         if i == 0 or i%10 == 0:
             if i == len(W_list)-1: plt.plot(x, y, 'r', label = 'Epoch '+str(i))
             else: plt.plot(x, y, 'k--')
@@ -155,7 +155,7 @@ if __name__ == "__main__":
     classA, classB = classes_generation()
     X, T = data_generation(classA, classB)
     plot_data(X, T)
-    weights = initialize_weights(1, X.shape[0])
+    weights = initialize_weights(1, X.shape[0]+1)
     #W, W_list, err_list = batch_perceptron_learning(X, T, weights, 0.01, 100)
     #W, W_list, err_list = online_perceptron_learning(X, T, weights, 0.01, 100)
     #W, W_list, err_list = online_delta_rule(X, T, weights, 0.01, 100)
