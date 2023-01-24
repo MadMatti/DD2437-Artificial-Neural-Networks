@@ -8,8 +8,8 @@ seed = 42
 '''3.1.1 Generation of linearly-separable data'''
 
 def classes_generation():
-    mA = np.array([-4, -2])
-    mB = np.array([0, 0])
+    mA = np.array([2, 2])
+    mB = np.array([1, 1])
     sigmaA = 0.5
     sigmaB = 0.5
     classA = np.zeros((2, n))
@@ -54,8 +54,8 @@ def add_bias(X):
 '''3.1.2 Classification with a single-layer perceptron and analysis'''
 
 def initialize_weights(n_output, n_input):
-    #np.random.seed(seed)
-    #weights = np.random.normal(size=(n_output,n_input), loc=0, scale=1)
+    np.random.seed(12)
+    weights = np.random.normal(size=(n_output,n_input), loc=0, scale=1)
     weights = [np.array([5, 8, 10])]
     return weights
 
@@ -130,13 +130,12 @@ def batch_delta_rule(X, T, weights, eta, epochs):
 
 
 def plot_errors(errors_list):
-    print("Final error: ", errors_list[-1])
+    print("Error epoch 50: ", errors_list[49])
+    #plt.text(0.95, 0.95, "Error epoch 50: "+str(round(errors_list[49], 3)), fontsize=12, horizontalalignment='right', verticalalignment='top', transform=plt.gca().transAxes)
     plt.plot(errors_list)
-    for i in range(len(errors_list)):
-        if errors_list[i] == 0:
-            plt.plot(i, errors_list[i], 'ro')
-    plt.title("Cost function")
+    plt.title("Loss function")
     plt.xlabel("Epochs")
+    plt.ylabel("Error")
     plt.show()
 
 def decision_boundary_plot(X, T, W_list):
@@ -159,6 +158,8 @@ def all_decision_boundary_plot(X, T, W_list):
             else: plt.plot(x, y, 'k--')
     plt.title("Decision boundaries by epoch for delta rule with eta=0.01")
     plt.legend()
+    plt.xlabel("x1")
+    plt.ylabel("x2")
     plt.show()
 
 if __name__ == "__main__":
@@ -168,7 +169,7 @@ if __name__ == "__main__":
     weights = initialize_weights(1, X.shape[0]+1)
     #W, W_list, err_list = batch_perceptron_learning(X, T, weights, 0.01, 100)
     #W, W_list, err_list = online_perceptron_learning(X, T, weights, 0.01, 100)
-    W, W_list, err_list = online_delta_rule(X, T, weights, 0.0005, 100)
-    W, W_list, err_list = batch_delta_rule(X, T, weights, 0.0005, 100)
+    W, W_list, err_list = online_delta_rule(X, T, weights, 0.0005, 200)
+    #W, W_list, err_list = batch_delta_rule(X, T, weights, 0.0005, 200)
     all_decision_boundary_plot(X, T, W_list)
     plot_errors(err_list)
