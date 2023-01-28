@@ -150,6 +150,28 @@ def all_decision_boundary_plot(X, T, W_list, V_list):
     
 ##given the two final weights matrices, plot the decision boundaries
 
+def gaussian_data():
+    x = np.arange(-5, 5, 0.5)
+    y = np.arange(-5, 5, 0.5)
+    xx, yy = np.meshgrid(x, y)
+    z = np.exp(-(xx**2 + yy**2)/10)-0.5
+
+    fig = plt.figure(figsize=(10,5))
+    fig3d = fig.add_subplot(1,2,1, projection='3d')
+    fig3d.plot_surface(xx, yy, z, cmap='plasma', shade=True)
+    fig3d.set_xlabel('x')
+    fig3d.set_ylabel('y')
+    fig3d.set_zlabel('z')
+    plt.show()
+
+    num = len(x)*len(y)
+    T = z.reshape(1, num)
+    X = np.concatenate((xx.reshape(1, num), yy.reshape(1, num)), axis=0)
+
+    print(X.shape)
+    print(X)
+    return X, T
+
 if __name__ == "__main__":
     classA, classB = classes_generation()
     X, T = new_data_generation(100)
