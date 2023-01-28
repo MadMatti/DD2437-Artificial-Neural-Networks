@@ -91,18 +91,19 @@ def add_bias(X):
 
 def forward(X, W, V):
     X = add_bias(X)
-    Z = activation_function(np.dot(W, X))
-    Z = add_bias(Z)
-    Y = activation_function(np.dot(V, Z))
-    return Y, Z
+    h_in = W@X
+    H = add_bias(activation_function(h_in))
+    o_in = V@H
+    O = activation_function(o_in)
+    
+    return H, O
 
-# Z = Hout Y = Oout
 
-def backward(T, Y, Z, V,num_hidden):
-    delta_y = (Y-T)* (derivative_activation_function(Y))
-    delta_z=np.dot(V.T,delta_y)*(derivative_activation_function(Z))
-    delta_z=delta_z[0:num_hidden]
-    return delta_y,delta_z
+def backward(T, O, H, V, Nhidden):    
+    delta_o = (O-T)* (derivative_activation_function(O))
+    delta_h = np.dot(V,delta_o)*(derivative_activation_function(H))
+    delta_h = delta_h[0:Nhidden]
+    return delta_o,delta_h
 
 
 #initialize weights matrix with number of hidden neurons in the layer editable
@@ -112,28 +113,35 @@ def initialize_weights(n_hidden_neurons):
     return W, V
 
 
+def weights_update(delta_o, delta_h, X, H, W, V, eta, dw, dv, alpha):
+    X = add_bias(X)
+    dw = (dw * alpha) - (eta * np.dot(delta_h, X.T))
+    #dv = (dv * alpha) - (eta * np.dot(delta_o, H.T))
+    W += dw
+    V += dv
+    return W, V, dw, dv
+
+
+
 ##do a function to train for an n number of epochs and return a list of weights and error for each epoch
-def train(X, T, W, V, eta, epochs,alpha):
+def train(X, T, W, V, eta, epochs,alpha, Nhidden):
     list_error = []
     list_missclass=[]
     list_W=[W.copy()]
-    list_V=[V.copy()]
-    deltaV, deltaW = np.zeros(V.shape), np.zeros(W.shape)
+    dv, dw = np.ones(V.shape), np.ones(W.shape)
     for i in range(epochs):
-        Y, Z = forward(X, W, V)
-        error = 0.5 * np.sum((Y - T) ** 2)
+        O, H = forward(X, W, V)
+        error = 0.5 * np.sum((O - T) ** 2)
         list_error.append(error)
-        deltaW, deltaV = backward(T, Y, Z,V, 2)
-        W += eta * deltaW
-        V += eta * deltaV
-        list_missclass.append(np.sum(np.sign(Y)!=T))
+        list_missclass.append(np.sum(np.sign(O)!=T))
+        delta_o, delta_h = backward(T, O, H, V, Nhidden)
+        W,V, dw, dv = weights_update(delta_o, delta_h, X, H, W, V, eta, dw, dv, alpha)
         list_W.append(W.copy())
-        list_V.append(V.copy())
-    return W,V,list_error,list_W,list_V,list_missclass
+    return W,V,list_error,list_W,list_missclass
 
 
 
-def all_decision_boundary_plot(X, T, W_list, V_list):
+def all_decision_boundary_plot(X, T, W_list):
     plt.scatter(X[0,:], X[1,:], c=T, cmap=plt.cm.Paired)
     x = np.linspace(-2, 2, 1000)
     for i, W in enumerate(W_list):
@@ -173,10 +181,10 @@ def gaussian_data():
 if __name__ == "__main__":
     classA, classB = classes_generation()
     X, T = new_data_generation(100)
-    W,V=initialize_weights(2)
-    W,V,list_error,list_W,list_V,list_missclass=train(X, T, W, V, 0.01, 1000,0.9)
+    W,V=initialize_weights(3)
+    W,V,list_error,list_W,list_missclass=train(X, T, W, V, 0.001, 10000,0.9, 3)
     plot_data(X, T)
     print(list_error[-1])
-    all_decision_boundary_plot(X, T, list_W, list_V)
+    all_decision_boundary_plot(X, T, list_W)
     print(list_missclass)
     plt.show()
