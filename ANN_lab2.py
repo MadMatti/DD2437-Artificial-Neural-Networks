@@ -5,6 +5,30 @@ n = 100
 seed = 42
 
 '''3.1.1 Generation of data'''
+def new_data_generation(n):
+    mA = np.array([1,0.3])
+    mB = np.array([0, -0.1])
+    sigmaA = 0.2
+    sigmaB = 0.3
+    classA = np.zeros((2, n))
+    classA[0, :] = np.concatenate((np.random.normal(-mA[0], sigmaA, n//2), np.random.normal(mA[0], sigmaA, n//2)))
+    classA[1, :] = np.random.normal(mA[1], sigmaA, n)
+    classB = np.zeros((2, n))
+    classB[0, :] = np.random.normal(mB[0], sigmaB, n)
+    classB[1, :] = np.random.normal(mB[1], sigmaB, n)
+    T = np.concatenate((np.ones(n), -np.ones(n)))
+    data = np.concatenate((classA, classB), axis=1)
+    data, T = shuffle_data_and_target(data, T)
+    return shuffle_data_and_target(data, T)
+
+def shuffle_data_and_target(data, target):
+    shuffle_indices = np.random.permutation(data.shape[1])
+    return data[:,shuffle_indices], target[shuffle_indices]
+
+n = 100
+seed = 42
+
+'''3.1.1 Generation of data'''
 def classes_generation():
     mA = np.array([0.8,0.2])
     mB = np.array([0, -0.1])
@@ -73,13 +97,13 @@ def forward(X, W, V):
     return Y, Z
 
 
-def backward(X, T, Y, Z, V):
+def backward(X, T, Y, Z, V,alpha,oldw,oldv):
     X = add_bias(X)
     delta = (Y - T) * derivative_activation_function(Y)
-    deltaV = np.dot(delta, Z.T)
+    deltaV=alpha*oldv-(1-alpha)*np.dot(delta, Z.T)
     delta = np.dot(V.T, delta) * derivative_activation_function(Z)
     delta = np.delete(delta, 0, 0)
-    deltaW = np.dot(delta, X.T)
+    deltaW=alpha*oldw-(1-alpha)*np.dot(delta, X.T)
     return deltaW, deltaV
 
 
@@ -91,40 +115,48 @@ def initialize_weights(n_hidden_neurons):
 
 
 ##do a function to train for an n number of epochs and return a list of weights and error for each epoch
-def train(X, T, W, V, eta, epochs):
+def train(X, T, W, V, eta, epochs,alpha):
     list_error = []
+    list_missclass=[]
     list_W=[W.copy()]
     list_V=[V.copy()]
+    deltaV, deltaW = np.zeros(V.shape), np.zeros(W.shape)
     for i in range(epochs):
         Y, Z = forward(X, W, V)
         error = 0.5 * np.sum((Y - T) ** 2)
         list_error.append(error)
-        deltaW, deltaV = backward(X, T, Y, Z,V)
-        W = W - eta * deltaW
-        V = V - eta * deltaV
+        deltaW, deltaV = backward(X, T, Y, Z,V,alpha,deltaW,deltaV)
+        W += eta * deltaW
+        V += eta * deltaV
+        list_missclass.append(np.sum(np.sign(Y)!=T))
         list_W.append(W.copy())
         list_V.append(V.copy())
-    return W,V,list_error,list_W,list_V
+    return W,V,list_error,list_W,list_V,list_missclass
 
-def decision_boundary_plot(X, T, W_list):
+
+
+def all_decision_boundary_plot(X, T, W_list, V_list):
     plt.scatter(X[0,:], X[1,:], c=T, cmap=plt.cm.Paired)
-    x = np.linspace(min(X[0,:]), max(X[0,:]), 100)
-    w1, w2, bias = W_list[-1]
-    y = -(w1*x+bias)/w2
-    plt.plot(x, y, 'k')
-    plt.title("Final decision boundary")
-    plt.show()
-
+    x = np.linspace(-2, 2, 1000)
+    for i, W in enumerate(W_list):
+        for W_j in W:
+            w1, w2, bias = W_j
+            y = -(w1*x+bias)/w2
+            if i == 0 or i%1000 == 0:
+                if i == len(W_list)-1: 
+                    plt.plot(x, y, 'r', label = 'Epoch '+str(i))
+                else: 
+                    plt.plot(x, y, 'k--')
+    
 ##given the two final weights matrices, plot the decision boundaries
 
 if __name__ == "__main__":
     classA, classB = classes_generation()
-    X, T = data_generation(classA, classB)
+    X, T = new_data_generation(100)
     W,V=initialize_weights(2)
-    W,V,list_error,list_W,list_V=train(X, T, W, V, 0.01, 1000)
-    decision_boundary_plot(X, T, list_V[-1])
+    W,V,list_error,list_W,list_V,list_missclass=train(X, T, W, V, 0.01, 1000,0.9)
     plot_data(X, T)
-    
-    
-    
-   
+    print(list_error[-1])
+    all_decision_boundary_plot(X, T, list_W, list_V)
+    print(list_missclass)
+    plt.show()
