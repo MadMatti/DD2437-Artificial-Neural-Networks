@@ -98,11 +98,14 @@ def forward(X, W, V):
 
 # Z = Hout Y = Oout
 
-def backward(T, Y, Z, V,num_hidden):
-    delta_y = (Y-T)* (derivative_activation_function(Y))
-    delta_z=np.dot(V.T,delta_y)*(derivative_activation_function(Z))
-    delta_z=delta_z[0:num_hidden]
-    return delta_y,delta_z
+def backward(X, T, Y, Z, V,alpha,oldw,oldv):
+    X = add_bias(X)
+    delta = (Y - T) * derivative_activation_function(Y)
+    deltaV=alpha*oldv-(1-alpha)*np.dot(delta, Z.T)
+    delta = np.dot(V.T, delta) * derivative_activation_function(Z)
+    delta = np.delete(delta, 0, 0)
+    deltaW=alpha*oldw-(1-alpha)*np.dot(delta, X.T)
+    return deltaW, deltaV
 
 
 #initialize weights matrix with number of hidden neurons in the layer editable
@@ -123,7 +126,7 @@ def train(X, T, W, V, eta, epochs,alpha):
         Y, Z = forward(X, W, V)
         error = 0.5 * np.sum((Y - T) ** 2)
         list_error.append(error)
-        deltaW, deltaV = backward(T, Y, Z,V, 2)
+        deltaW, deltaV = backward(X, T, Y, Z,V,alpha,deltaW,deltaV)
         W += eta * deltaW
         V += eta * deltaV
         list_missclass.append(np.sum(np.sign(Y)!=T))
