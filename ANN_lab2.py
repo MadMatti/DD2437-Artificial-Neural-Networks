@@ -7,9 +7,9 @@ seed = 42
 '''3.1.1 Generation of data'''
 def new_data_generation(n):
     mA = np.array([1,0.3])
-    mB = np.array([0, -0.1])
-    sigmaA = 0.2
-    sigmaB = 0.3
+    mB = np.array([0, 0])
+    sigmaA = 0.3
+    sigmaB = 0.4
     classA = np.zeros((2, n))
     classA[0, :] = np.concatenate((np.random.normal(-mA[0], sigmaA, n//2), np.random.normal(mA[0], sigmaA, n//2)))
     classA[1, :] = np.random.normal(mA[1], sigmaA, n)
@@ -150,7 +150,7 @@ def all_decision_boundary_plot(X, T, W_list, V_list):
     
 
 def plot_errors(tot_list_errors, tot_list_missclass):
-    list_n = [2,4,6,8,10]
+    list_n = [1, 4, 8, 10, 20, 30, 50]
     for i in range(len(tot_list_errors)):
         plt.plot(tot_list_errors[i], label = 'n = '+str(list_n[i]))
     plt.legend()
@@ -195,18 +195,18 @@ if __name__ == "__main__":
     X, T = new_data_generation(100)
     # W,V=initialize_weights(4)
     # W,V,list_error,list_W,list_V,list_missclass=train(X, T, W, V, 0.001, 10000,0.9)
-    # plot_data(X, T)
+    plot_data(X, T)
     # print(list_error[-1])
     # all_decision_boundary_plot(X, T, list_W, list_V)
     # print(list_missclass)
     # plt.show()
 
-    n_hidden = [2, 4, 6, 8, 10]
+    n_hidden = [1, 4, 8, 10, 20, 30, 50]
     tot_list_error = []
     tot_list_missclass=[]
     for n in n_hidden:
         W,V=initialize_weights(n)
-        W,V,list_error,list_W,list_V,list_missclass=train(X, T, W, V, 0.001, 10000,0.9)
+        W,V,list_error,list_W,list_V,list_missclass=train(X, T, W, V, 0.01, 1500,0.9)
         tot_list_error.append(list_error)
         tot_list_missclass.append(list_missclass)
 
