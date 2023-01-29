@@ -128,7 +128,7 @@ def train(X, T, W, V, eta, epochs,alpha):
         deltaW, deltaV = backward(X, T, Y, Z,V,alpha,deltaW,deltaV)
         W += eta * deltaW
         V += eta * deltaV
-        list_missclass.append(np.sum(np.sign(Y)!=T))
+        list_missclass.append(np.sum(np.sign(Y)!=T)/X.shape[1])
         list_W.append(W.copy())
         list_V.append(V.copy())
     return W,V,list_error,list_W,list_V,list_missclass
@@ -142,13 +142,31 @@ def all_decision_boundary_plot(X, T, W_list, V_list):
         for W_j in W:
             w1, w2, bias = W_j
             y = -(w1*x+bias)/w2
-            if i == 0 or i%1000 == 0:
+            if i == 0 or i%5000 == 0:
                 if i == len(W_list)-1: 
                     plt.plot(x, y, 'r', label = 'Epoch '+str(i))
-                else: 
-                    plt.plot(x, y, 'k--')
+                # else: 
+                #     plt.plot(x, y, 'k--')
     
-##given the two final weights matrices, plot the decision boundaries
+
+def plot_errors(tot_list_errors, tot_list_missclass):
+    list_n = [2,4,6,8,10]
+    for i in range(len(tot_list_errors)):
+        plt.plot(tot_list_errors[i], label = 'n = '+str(list_n[i]))
+    plt.legend()
+    plt.title('MSE error for different number of nodes in the hidden layer')
+    plt.xlabel('Epochs')
+    plt.ylabel('MSE')
+    plt.show()
+
+    for i in range(len(tot_list_missclass)):
+        plt.plot(tot_list_missclass[i], label = 'n = '+str(list_n[i]))
+    plt.legend()
+    plt.title('Miscalssification ratio for different number of nodes in the hidden layer')
+    plt.xlabel('Epochs')
+    plt.ylabel('Miscassification ratio')
+    plt.show()
+
 
 def gaussian_data():
     x = np.arange(-5, 5, 0.5)
@@ -175,10 +193,25 @@ def gaussian_data():
 if __name__ == "__main__":
     classA, classB = classes_generation()
     X, T = new_data_generation(100)
-    W,V=initialize_weights(2)
-    W,V,list_error,list_W,list_V,list_missclass=train(X, T, W, V, 0.01, 1000,0.9)
-    plot_data(X, T)
-    print(list_error[-1])
-    all_decision_boundary_plot(X, T, list_W, list_V)
-    print(list_missclass)
-    plt.show()
+    # W,V=initialize_weights(4)
+    # W,V,list_error,list_W,list_V,list_missclass=train(X, T, W, V, 0.001, 10000,0.9)
+    # plot_data(X, T)
+    # print(list_error[-1])
+    # all_decision_boundary_plot(X, T, list_W, list_V)
+    # print(list_missclass)
+    # plt.show()
+
+    n_hidden = [2, 4, 6, 8, 10]
+    tot_list_error = []
+    tot_list_missclass=[]
+    for n in n_hidden:
+        W,V=initialize_weights(n)
+        W,V,list_error,list_W,list_V,list_missclass=train(X, T, W, V, 0.001, 10000,0.9)
+        tot_list_error.append(list_error)
+        tot_list_missclass.append(list_missclass)
+
+    print(tot_list_error)
+    print(tot_list_missclass)
+
+    plot_errors(tot_list_error, tot_list_missclass)
+
