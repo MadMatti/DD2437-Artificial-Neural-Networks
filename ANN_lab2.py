@@ -174,8 +174,8 @@ def gaussian_data():
     xx, yy = np.meshgrid(x, y)
     z = np.exp(-(xx**2 + yy**2)/10)-0.5
 
-    fig = plt.figure(figsize=(10,5))
-    fig3d = fig.add_subplot(1,2,1, projection='3d')
+    fig = plt.figure(figsize=(5,5))
+    fig3d = fig.add_subplot(1,1,1, projection='3d')
     fig3d.plot_surface(xx, yy, z, cmap='plasma', shade=True)
     fig3d.set_xlabel('x')
     fig3d.set_ylabel('y')
@@ -184,34 +184,85 @@ def gaussian_data():
 
     num = len(x)*len(y)
     T = z.reshape(1, num)
-    X = np.concatenate((xx.reshape(1, num), yy.reshape(1, num)), axis=0)
+    X = np.vstack((xx.reshape(1, num), yy.reshape(1, num)))
 
-    print(X.shape)
-    print(X)
-    return X, T
+    return X, T, xx, yy
+
+def n_hidden_gaussian(eta, epochs, alpha):
+    X, T , xx, yy = gaussian_data()
+    n_hidded = [1, 2, 3, 5, 10, 15, 20, 25]
+
+    fig = plt.figure(figsize=(14,7))
+
+    for n in n_hidded:
+        W, V = initialize_weights(n)
+        W, V, list_error, list_W, list_V, list_missclass = train(X, T, W, V, eta, epochs, alpha)
+        Y, Z = forward(X, W, V)
+        
+        ax3d = fig.add_subplot(2, 4, n_hidded.index(n)+1, projection='3d')
+        ax3d.plot_surface(xx, yy, Y.reshape(20,20), cmap='plasma', shade=True, alpha=0.75, label='n = '+str(n))
+        ax3d.set_title('n = '+str(n))
+    plt.show()
+
+
+def sampling_gaussian(eta, epochs, alpha):
+    X, T, xx, yy = gaussian_data()
+    idx_train = np.random.choice(range(X.shape[1]), int(X.shape[1]*0.5), replace=False)
+    idx_val = [i for i in range(X.shape[1]) if i not in idx_train]
+    X_train = X[:, idx_train]
+    T_train = T[:, idx_train]
+    X_val = X[:, idx_val]
+    T_val = T[:, idx_val]
+
+    n_hidded = [1, 2, 3, 5, 10, 15, 20, 25]
+    tot_error_train = []
+    tot_error_val = []
+
+    for n in n_hidded:
+        W, V = initialize_weights(n)
+        W, V, list_error, list_W, list_V, list_missclass = train(X_train, T_train, W, V, eta, epochs, alpha)
+        Y_train, Z = forward(X_train, W, V)
+        Y_val, Z_val = forward(X_val, W, V)
+        tot_error_train.append(np.mean((Y_train-T_train)**2))
+        tot_error_val.append(np.mean((Y_val-T_val)**2))
+        
+
+    plt.plot(n_hidded, tot_error_train, label='Training error')
+    plt.plot(n_hidded, tot_error_val, label='Validation error')
+    plt.legend()
+    plt.title('MSE for sampling 50% patters for training')
+    plt.xlabel('Hidden nodes')
+    plt.ylabel('MSE')
+    plt.xticks(n_hidded)
+    plt.show()
+
 
 if __name__ == "__main__":
     classA, classB = classes_generation()
     X, T = new_data_generation(100)
     # W,V=initialize_weights(4)
     # W,V,list_error,list_W,list_V,list_missclass=train(X, T, W, V, 0.001, 10000,0.9)
-    plot_data(X, T)
+    # plot_data(X, T)
     # print(list_error[-1])
     # all_decision_boundary_plot(X, T, list_W, list_V)
     # print(list_missclass)
     # plt.show()
 
-    n_hidden = [1, 4, 8, 10, 20, 30, 50]
-    tot_list_error = []
-    tot_list_missclass=[]
-    for n in n_hidden:
-        W,V=initialize_weights(n)
-        W,V,list_error,list_W,list_V,list_missclass=train(X, T, W, V, 0.01, 1500,0.9)
-        tot_list_error.append(list_error)
-        tot_list_missclass.append(list_missclass)
+    # n_hidden = [1, 4, 8, 10, 20, 30, 50]
+    # tot_list_error = []
+    # tot_list_missclass=[]
+    # for n in n_hidden:
+    #     W,V=initialize_weights(n)
+    #     W,V,list_error,list_W,list_V,list_missclass=train(X, T, W, V, 0.01, 1500,0.9)
+    #     tot_list_error.append(list_error)
+    #     tot_list_missclass.append(list_missclass)
 
-    print(tot_list_error)
-    print(tot_list_missclass)
+    # print(tot_list_error)
+    # print(tot_list_missclass)
 
-    plot_errors(tot_list_error, tot_list_missclass)
+    # plot_errors(tot_list_error, tot_list_missclass)
+
+    # gaussian_data()
+    n_hidden_gaussian(0.01, 10000, 0.9)
+    sampling_gaussian(0.01, 10000, 0.9)
 
