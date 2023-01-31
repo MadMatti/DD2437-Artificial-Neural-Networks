@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib.ticker import StrMethodFormatter
 
 n = 100
 seed = 42
@@ -236,6 +237,73 @@ def sampling_gaussian(eta, epochs, alpha):
     plt.xticks(n_hidded)
     plt.show()
 
+def best_parameters(alpha, n_hidden=10):
+    X, T, xx, yy = gaussian_data()
+    idx_train = np.random.choice(range(X.shape[1]), int(X.shape[1]*0.5), replace=False)
+    idx_val = [i for i in range(X.shape[1]) if i not in idx_train]
+    X_train = X[:, idx_train]
+    T_train = T[:, idx_train]
+    X_val = X[:, idx_val]
+    T_val = T[:, idx_val]
+
+    W, V = initialize_weights(n_hidden)
+    eta = [0.00001, 0.0001, 0.001, 0.01, 0.1]
+    epochs = [100, 1000, 10000, 20000]
+    min_error = np.inf
+    best_eta = -1
+    best_epochs = -1
+
+    for e in eta:
+        for ep in epochs:
+            W, V, list_error, list_W, list_V, list_missclass = train(X, T, W, V, e, ep, alpha)
+            pred_val = forward(X_val, W, V)[0]
+            mse_val = np.mean((pred_val-T_val)**2)
+            if mse_val < min_error:
+                min_error = mse_val
+                best_eta = e
+                best_epochs = ep
+            if min_error == 0:
+                break
+
+    print('Best eta: ', best_eta)
+    print('Best epochs: ', best_epochs)
+    print('MSE: ', min_error)
+
+
+def different_sampling(alpha, n_hidden=10, eta=0.01, epochs=20000):
+    X, T, xx, yy = gaussian_data()
+
+    splits = [0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8]
+    MSEs_train = []
+    MSEs_val = []
+
+    for split in splits:
+        idx_train = np.random.choice(range(X.shape[1]), int(X.shape[1]*split), replace=False)
+        idx_val = [i for i in range(X.shape[1]) if i not in idx_train]
+        X_train = X[:, idx_train]
+        T_train = T[:, idx_train]
+        X_val = X[:, idx_val]
+        T_val = T[:, idx_val]
+
+        W, V = initialize_weights(n_hidden)
+        W, V, list_error, list_W, list_V, list_missclass = train(X_train, T_train, W, V, eta, epochs, alpha)
+
+        pred_train = forward(X_train, W, V)[0]
+        pred_val = forward(X_val, W, V)[0]
+        MSEs_train.append(np.mean((pred_train-T_train)**2))
+        MSEs_val.append(np.mean((pred_val-T_val)**2))
+
+    plt.plot(splits, MSEs_train, label='Training')
+    plt.plot(splits, MSEs_val, label='Validation')
+    plt.legend()
+    plt.title('MSE for different sampling')
+    plt.xlabel('% training samples')
+    plt.ylabel('MSE')
+    plt.xticks(splits)
+    plt.gca().yaxis.set_major_formatter(StrMethodFormatter('{x:,.4f}'))
+    plt.show()
+
+
 
 if __name__ == "__main__":
     classA, classB = classes_generation()
@@ -263,6 +331,8 @@ if __name__ == "__main__":
     # plot_errors(tot_list_error, tot_list_missclass)
 
     # gaussian_data()
-    n_hidden_gaussian(0.01, 10000, 0.9)
-    sampling_gaussian(0.01, 10000, 0.9)
+    # n_hidden_gaussian(0.01, 10000, 0.9)
+    # sampling_gaussian(0.01, 10000, 0.9)
+    # best_parameters(0.9, 10)
+    different_sampling(0.9, 10, 0.01, 20000)
 
