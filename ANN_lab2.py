@@ -170,7 +170,7 @@ def plot_errors(tot_list_errors, tot_list_missclass):
 
 
 def gaussian_data():
-    x = np.arange(-5, 5, 0.5)
+    x = np.arange(-5, 5, 0.7)
     y = np.arange(-5, 5, 0.5)
     xx, yy = np.meshgrid(x, y)
     z = np.exp(-(xx**2 + yy**2)/10)-0.5
@@ -332,7 +332,7 @@ if __name__ == "__main__":
 
     # gaussian_data()
     # n_hidden_gaussian(0.01, 10000, 0.9)
-    # sampling_gaussian(0.01, 10000, 0.9)
+    sampling_gaussian(0.01, 10000, 0.9)
     # best_parameters(0.9, 10)
-    different_sampling(0.9, 10, 0.01, 20000)
+    # different_sampling(0.9, 10, 0.01, 20000)
 
