@@ -201,7 +201,7 @@ def n_hidden_gaussian(eta, epochs, alpha):
         Y, Z = forward(X, W, V)
         
         ax3d = fig.add_subplot(2, 4, n_hidded.index(n)+1, projection='3d')
-        ax3d.plot_surface(xx, yy, Y.reshape(20,20), cmap='plasma', shade=True, alpha=0.75, label='n = '+str(n))
+        ax3d.plot_surface(xx, yy, Y.reshape(20,15), cmap='plasma', shade=True, alpha=0.75, label='n = '+str(n))
         ax3d.set_title('n = '+str(n))
     plt.show()
 
@@ -331,7 +331,7 @@ if __name__ == "__main__":
     # plot_errors(tot_list_error, tot_list_missclass)
 
     # gaussian_data()
-    # n_hidden_gaussian(0.01, 10000, 0.9)
+    n_hidden_gaussian(0.01, 10000, 0.9)
     sampling_gaussian(0.01, 10000, 0.9)
     # best_parameters(0.9, 10)
     # different_sampling(0.9, 10, 0.01, 20000)
