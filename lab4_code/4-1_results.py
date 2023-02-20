@@ -1,4 +1,5 @@
 from rbm import RestrictedBoltzmannMachine
+from dbn import DeepBeliefNet
 from util import *
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -9,13 +10,11 @@ sns.set_style('whitegrid')
 image_size = [28, 28]
 train_images, train_labels, test_images, test_labels = read_mnist()
 
-RBM = RestrictedBoltzmannMachine(ndim_visible=image_size[0] * image_size[1],
-                                 ndim_hidden=500,
-                                 is_bottom=True,
-                                 image_size=image_size,
-                                 is_top=False,
-                                 n_labels=10,
-                                 batch_size=20)
+dbn = DeepBeliefNet(sizes={"vis": image_size[0] * image_size[1], "hid": 500, "pen": 500, "top": 2000, "lbl": 10},
+                    image_size=image_size,
+                    n_labels=10,
+                    batch_size=15
+                    )
 
-RBM.cd1(visible_trainset=train_images, n_iterations=20)
+dbn.recognize(train_images, train_labels, test_images, test_labels)
 

@@ -71,11 +71,21 @@ class DeepBeliefNet():
         # and read out the labels (replace pass below and 'predicted_lbl' to your predicted labels).
         # NOTE : inferring entire train/test set may require too much compute memory (depends on your system). In that case, divide into mini-batches.
         
+        _, h1 = self.rbm_stack["vis--hid"].get_h_given_v_dir(vis)
+        _, h2 = self.rbm_stack["hid--pen"].get_h_given_v_dir(h1)
+        h2_labels = np.concatenate((h2, lbl), axis=1)
+
         for _ in range(self.n_gibbs_recog):
 
-            pass
+            _, out = self.rbm_stack["pen+lbl--top"].get_v_given_h_dir(h2_labels)
+            _, h2_labels = self.rbm_stack["pen+lbl--top"].get_h_given_v_dir(out)
 
-        predicted_lbl = np.zeros(true_lbl.shape)
+        h2_labels[:, -lbl.shape[1]:] = h2
+
+        predicted_lbl = h2_labels[:, -true_lbl.shape[1]:]
+        predicted_list = []
+        for pred in predicted_lbl:
+            predicted_list.append(np.where(pred == 1)[0])
             
         print ("accuracy = %.2f%%"%(100.*np.mean(np.argmax(predicted_lbl,axis=1)==np.argmax(true_lbl,axis=1))))
         
