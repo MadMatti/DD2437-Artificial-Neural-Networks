@@ -24,6 +24,8 @@ class RestrictedBoltzmannMachine():
         if image_size is None:
             image_size = [28, 28]
 
+        self.labels_number = n_labels
+
         self.ndim_visible = ndim_visible
 
         self.ndim_hidden = ndim_hidden
@@ -54,9 +56,9 @@ class RestrictedBoltzmannMachine():
 
         self.delta_weight_h_to_v = 0        
         
-        self.weight_v_to_h = None
+        self.weight_v_to_h = 0.1
         
-        self.weight_h_to_v = None
+        self.weight_h_to_v = 0.1
 
         self.learning_rate = 0.01
         

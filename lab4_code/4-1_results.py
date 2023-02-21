@@ -16,5 +16,16 @@ dbn = DeepBeliefNet(sizes={"vis": image_size[0] * image_size[1], "hid": 500, "pe
                     batch_size=15
                     )
 
-dbn.recognize(train_images, train_labels, test_images, test_labels)
+dbn.train_greedylayerwise(train_images, train_labels, 20)
+print(dbn.rbm_stack)
+
+iterations = range(20)
+plt.plot(iterations, dbn.rbm_stack['vis--hid'].losses, label='vis--hid')
+plt.plot(iterations, dbn.rbm_stack['hid--pen'].losses, label='hid--pen')
+plt.plot(iterations, dbn.rbm_stack['pen+lbl--top'].losses, label='pen+lbl--top')
+
+plt.xlabel('Iterations')
+plt.ylabel('Reconstruction Loss')
+plt.legend()
+plt.show()
 
