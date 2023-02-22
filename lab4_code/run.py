@@ -9,18 +9,18 @@ if __name__ == "__main__":
 
     ''' restricted boltzmann machine '''
     
-    print ("\nStarting a Restricted Boltzmann Machine..")
+    # print ("\nStarting a Restricted Boltzmann Machine..")
 
-    rbm = RestrictedBoltzmannMachine(ndim_visible=image_size[0]*image_size[1],
-                                     ndim_hidden=200,
-                                     is_bottom=True,
-                                     image_size=image_size,
-                                     is_top=False,
-                                     n_labels=10,
-                                     batch_size=10
-    )
+    # rbm = RestrictedBoltzmannMachine(ndim_visible=image_size[0]*image_size[1],
+    #                                  ndim_hidden=200,
+    #                                  is_bottom=True,
+    #                                  image_size=image_size,
+    #                                  is_top=False,
+    #                                  n_labels=10,
+    #                                  batch_size=10
+    # )
     
-    rbm.cd1(visible_trainset=train_imgs, n_iterations=10000)
+    # rbm.cd1(visible_trainset=train_imgs, n_iterations=100)
     
     ''' deep- belief net '''
 
@@ -34,7 +34,7 @@ if __name__ == "__main__":
     
     ''' greedy layer-wise training '''
 
-    dbn.train_greedylayerwise(vis_trainset=train_imgs, lbl_trainset=train_lbls, n_iterations=10000)
+    dbn.train_greedylayerwise(vis_trainset=train_imgs, lbl_trainset=train_lbls, n_iterations=100)
 
     dbn.recognize(train_imgs, train_lbls)
     
@@ -47,13 +47,13 @@ if __name__ == "__main__":
 
     ''' fine-tune wake-sleep training '''
 
-    dbn.train_wakesleep_finetune(vis_trainset=train_imgs, lbl_trainset=train_lbls, n_iterations=10000)
+    # dbn.train_wakesleep_finetune(vis_trainset=train_imgs, lbl_trainset=train_lbls, n_iterations=10000)
 
-    dbn.recognize(train_imgs, train_lbls)
+    # dbn.recognize(train_imgs, train_lbls)
     
-    dbn.recognize(test_imgs, test_lbls)
+    # dbn.recognize(test_imgs, test_lbls)
     
-    for digit in range(10):
-        digit_1hot = np.zeros(shape=(1,10))
-        digit_1hot[0,digit] = 1
-        dbn.generate(digit_1hot, name="dbn")
+    # for digit in range(10):
+    #     digit_1hot = np.zeros(shape=(1,10))
+    #     digit_1hot[0,digit] = 1
+    #     dbn.generate(digit_1hot, name="dbn")

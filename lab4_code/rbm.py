@@ -64,10 +64,10 @@ class RestrictedBoltzmannMachine():
         
         self.momentum = 0.7
 
-        self.print_period = 2
+        self.print_period = 10
         
         self.rf = { # receptive-fields. Only applicable when visible layer is input data
-            "period" : 2, # iteration period to visualize
+            "period" : 10, # iteration period to visualize
             "grid" : [5,5], # size of the grid
             "ids" : np.random.randint(0,self.ndim_hidden,25) # pick some random hidden units
             }
@@ -120,8 +120,8 @@ class RestrictedBoltzmannMachine():
 
             _, h = self.get_h_given_v(visible_trainset)
             _, reconstruction = self.get_v_given_h(h)
-            loss = mean_squared_error(visible_trainset, reconstruction)
-            self.losses.append(loss)
+            # loss = mean_squared_error(visible_trainset, reconstruction)
+            # self.losses.append(loss)
 
                 # visualize once in a while when visible layer is input images
 
@@ -130,6 +130,8 @@ class RestrictedBoltzmannMachine():
 
             # print progress
             if iteration % self.print_period == 0:
+                loss = mean_squared_error(visible_trainset, reconstruction)
+                self.losses.append(loss)
                 print("iteration=%7d recon_loss=%4.4f" % (iteration, loss))
 
             self.delta_weight_vh_mean.append(np.mean(self.delta_weight_vh))
@@ -305,7 +307,7 @@ class RestrictedBoltzmannMachine():
             # this case should never be executed : when the RBM is a part of a DBN and is at the top, it will have not have directed connections.
             # Appropriate code here is to raise an error (replace pass below)
             
-            pass
+            raise ValueError('Top should have no directed weights')
             
         else:
                         
